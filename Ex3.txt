@@ -1,0 +1,322 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#define N 20
+
+/*315655647 , Idan malka .
+ * this is the two structures no.1 is the recommender struct that is responsible for the recommenders info
+ * the second is the struct is responsible for the developer info
+ * @param first name , last name , email address.*/
+typedef struct recommender{
+    char firstName[N];
+    char lastName[N];
+    char emailAddress[N];
+
+}Recommender;
+
+typedef struct Developer{
+    char firstName[N];
+    char lastName[N];
+    char degreeInfo[N];
+    struct Developer *recommend1 , *recommend2;
+    struct recommender *recommenderOut1 , *recommenderOut2;
+
+
+}Developer;
+
+void printCandidates(Developer *candidates[]);
+void insertNewCandidates(Developer *candidates[], int i , Developer *employees[]);
+void printWorkers(Developer *employees[]);
+void hiringCandidate(Developer *candidates[] , Developer *employees[]);
+void exitAll(Developer *candidates[], Developer *employees[]);
+
+
+int main() {
+    int selected;
+    int i = 0 ;
+    Developer *employees[N];
+    Developer *candidates[N];
+
+
+    for(int i = 0 ; i < N ; i++){
+        employees[i] = NULL;
+        candidates[i] = NULL;
+    }
+
+    while(selected != 5) {
+        printf("%s" , "Welcome, what do you want to do?\n");
+        printf("%s" , "1.Print candidates.\n");
+        printf("%s" , "2.Print workers.\n");
+        printf("%s" , "3.Insert new Candidate.\n");
+        printf("%s" , "4.Hire candidate.\n");
+        printf("%s" , "5.Exit.\n");
+        scanf("%d" , &selected);
+        getchar();
+        if(selected > 5){
+            selected = 6;
+        }
+
+
+        switch (selected) {
+            case 1:
+                printCandidates(candidates);
+                break;
+            case 2:
+                printWorkers(employees);
+                break;
+            case 3:
+                insertNewCandidates(candidates , i , employees);
+                i++;
+                break;
+            case 4:
+                hiringCandidate(candidates,employees);
+                break;
+            case 5:
+                exitAll(candidates,employees);
+                break;
+            case 6:
+                break;
+
+
+        }
+    }
+
+}
+// this method is printing the candidates array .
+void printCandidates(Developer *candidates[]){
+    for (int i = 0 ; i < N ; i++) {
+        if(candidates[i] != NULL) {
+            printf("First name : %s\n", candidates[i]->firstName);
+            printf("Last name : %s\n", candidates[i]->lastName);
+            printf("Degree in : %s\n", candidates[i]->degreeInfo);
+            if(candidates[i]->recommend1 != NULL) {
+                printf("Recommended by a developer : %s %s\n", candidates[i]->recommend1->firstName , candidates[i]->recommend1->lastName);
+            }
+            if(candidates[i]->recommend2 != NULL){
+                printf("and by the developer : %s %s\n" , candidates[i]->recommend2->firstName , candidates[i]->recommend2->lastName);
+            }
+            if(candidates[i]->recommenderOut1 != NULL){
+                printf("Recommended by an outsider : %sLast name:%s\n", candidates[i]->recommenderOut1->firstName , candidates[i]->recommenderOut1->lastName);
+                printf("Email: %s\n" , candidates[i]->recommenderOut1->emailAddress);
+            }
+            if(candidates[i]->recommenderOut2 != NULL){
+                printf("and by the outsider: %sLast name: %s\n" , candidates[i]->recommenderOut2->firstName , candidates[i]->recommenderOut2->lastName);
+                printf("Email: %s\n" , candidates[i]->recommenderOut2->emailAddress);
+            }
+            printf("\n");
+        }
+    }
+    return;
+}
+//this method is printing the employees that are hired .
+void printWorkers(Developer *employees[]){
+    for(int i = 0 ; i < N ; i++){
+        if(employees[i] != NULL) {
+            printf("First name : %s\n", employees[i]->firstName);
+            printf("Last name : %s\n", employees[i]->lastName);
+        }
+    }
+    return;
+}
+//this method inserts new candidates to the array and checking if the recommenders are from the company or not .
+void insertNewCandidates(Developer *candidates[], int i , Developer *employees[]) {
+    int flag = 0;
+    candidates[i] = (struct Developer *) malloc(sizeof(struct Developer));
+    if (candidates[i] == NULL) {
+        printf("memory did not applied.");
+        exit(1);
+    }
+    printf("First name :");
+    scanf("%s", &candidates[i]->firstName);
+    getchar();
+    printf("Last name: ");
+    fgets(candidates[i]->lastName, N, stdin);
+    candidates[i]->lastName[strcspn(candidates[i]->lastName, "\n")] = 0;
+    printf("Degree : ");
+    fgets(candidates[i]->degreeInfo, N, stdin);
+    candidates[i]->degreeInfo[strcspn(candidates[i]->degreeInfo, "\n")] = 0;
+    candidates[i]->recommend1 = (struct Developer *) malloc(sizeof(struct Developer));// first recommend malloc
+    printf("Recommendation from the company by :\n");
+    for (int h = 0; h < N; h++) {
+        printf("1. First name: ");
+        fgets(candidates[i]->recommend1->firstName, N, stdin);
+        if (strcmp(candidates[i]->recommend1->firstName, "\n") == 0) {
+            candidates[i]->recommend1->firstName[strcspn(candidates[i]->recommend1->firstName, "\n")] = "\0";
+            free(candidates[i]->recommend1);
+            candidates[i]->recommend1 = NULL;
+            break;
+        } else {
+            candidates[i]->recommend1->firstName[strcspn(candidates[i]->recommend1->firstName, "\n")] = 0;
+            printf("2. Last name: ");
+            fgets(candidates[i]->recommend1->lastName, N, stdin);
+            candidates[i]->recommend1->lastName[strcspn(candidates[i]->recommend1->lastName, "\n")] = 0;
+                for(int w = 0 ; w < N ; w++){
+                    if (employees[w] != NULL){
+                        if(strcmp(candidates[i]->recommend1->firstName , employees[w]) == 0) {
+                            flag = 1;
+                            break;
+                        }
+                    }
+                    else {
+                        printf("Please enter a valid employee\n");
+                        break;
+                    }
+
+            }
+            if (flag == 1) {
+                break;
+            }
+        }
+
+    }
+
+    if(candidates[i]->recommend1 != NULL) {
+        flag = 0;
+        for (int h = 0; h < N; h++) {
+            printf("Another recommender, 1.First name : ");
+            candidates[i]->recommend2 = (struct Developer *) malloc(sizeof(struct Developer));// second recommend malloc
+            fgets(candidates[i]->recommend2->firstName, N, stdin);
+            if (strcmp(candidates[i]->recommend2->firstName, "\n") == 0) {
+                candidates[i]->recommend2->firstName[strcspn(candidates[i]->recommend2->firstName, "\n")] = "\0";
+                free(candidates[i]->recommend2);
+                candidates[i]->recommend2 = NULL;
+                break;
+            } else {
+                candidates[i]->recommend2->firstName[strcspn(candidates[i]->recommend2->firstName, "\n")] = 0;
+                printf("2.Last name : ");
+                fgets(candidates[i]->recommend2->lastName, N, stdin);
+                candidates[i]->recommend2->lastName[strcspn(candidates[i]->recommend2->lastName, "\n")] = 0;
+                if(employees[h] != NULL) {
+                    for (int w = 0; w < N; w++) {
+                        if (employees[w] != NULL) {
+                            if (strcmp(candidates[i]->recommend2->firstName, employees[w]) == 0) {
+                                flag = 1;
+                                break;
+                            }
+                            else {
+                                printf("Please enter a valid employee\n");
+                                break;
+                            }
+                        }
+
+                    }
+                }
+                if (flag == 1) {
+                    break;
+                }
+
+            }
+
+        }
+    }
+
+
+    candidates[i]->recommenderOut1 = (struct Developer *) malloc(sizeof(struct Developer)); // first outsider malloc
+    printf("Recommendation from outside the company ?  :");
+    printf("First name : ");
+    fgets(candidates[i]->recommenderOut1->firstName, N, stdin);
+    if (strcmp(candidates[i]->recommenderOut1->firstName, "\n") == 0) {
+        candidates[i]->recommenderOut1->firstName[strcspn(candidates[i]->recommenderOut1->firstName, "\n")] = "\0";
+        free(candidates[i]->recommenderOut1);
+        candidates[i]->recommenderOut1 = NULL;
+    } else {
+        printf("2.Last name : ");
+        fgets(candidates[i]->recommenderOut1->lastName, N, stdin);
+        candidates[i]->recommenderOut1->lastName[strcspn(candidates[i]->recommenderOut1->lastName, "\n")] = 0;
+        printf("3.Email : ");
+        scanf("%s", candidates[i]->recommenderOut1->emailAddress);
+        getchar();
+        printf("Another recommender from outside the company ? 1.First name :  ");
+        candidates[i]->recommenderOut2 = (struct Developer *) malloc(sizeof(struct Developer));
+        fgets(candidates[i]->recommenderOut2->firstName, N, stdin);
+        if (strcmp(candidates[i]->recommenderOut2->firstName, "\n") == 0) {
+            candidates[i]->recommenderOut2->firstName[strcspn(candidates[i]->recommenderOut2->firstName,
+                                                              "\n")] = "\0";
+            free(candidates[i]->recommenderOut2);
+            candidates[i]->recommenderOut2 = NULL;
+        } else {
+            printf("2.Last Name : ");
+            fgets(candidates[i]->recommenderOut2->lastName, N, stdin);
+            candidates[i]->recommenderOut2->lastName[strcspn(candidates[i]->recommenderOut2->lastName, "\n")] = 0;
+            printf("3.Email : ");
+            scanf("%s", candidates[i]->recommenderOut2->emailAddress);
+
+        }
+
+    }
+
+
+    return;
+}
+
+
+
+//this method is hiring candidates and making them an employee .
+void hiringCandidate(Developer *candidates[] , Developer *employees[]){
+    int i = 0;
+    int temp = 0;
+    char tempFirst[N];
+    char tempLast[N];
+    for(int j = 0 ; j < N ; j++){
+        tempFirst[j] = NULL;
+        tempLast[j] = NULL;
+    }
+    printf("Enter first name : ");
+    fgets(tempFirst , N , stdin);
+    tempFirst[strcspn(tempFirst, "\n")] = 0;
+    printf("Enter last name : ");
+    fgets(tempLast , N , stdin);
+    tempLast[strcspn(tempLast, "\n")] = 0;
+    for(int i = 0 ; i < N ; i++) {
+        if(candidates[i] != NULL){
+            if (strcmp(candidates[i]->firstName , tempFirst) == 0) {
+                if (strcmp(candidates[i]->lastName, tempLast) == 0) {
+                    for (int j = 0; j < N; j++) {
+                        if (employees[j] == NULL) {
+                            employees[j] = candidates[i];
+                            candidates[i]->recommend1 = NULL;
+                            candidates[i]->recommend2 = NULL;
+                            candidates[i]->recommenderOut1 = NULL;
+                            candidates[i]->recommenderOut2 = NULL;
+                            candidates[i] = NULL;
+                            temp = i;
+                            for (int k = temp; k < N - 1; k++) {
+                                candidates[k] = candidates[k + 1];
+                                candidates[k + 1] = NULL;
+                            }
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            printf("This is not a valid candidate , goodbye.\n");
+            break;
+        }
+
+    }
+    return;
+
+}
+//this method is freeing all the memory and making all the employees / candidates NULL.
+void exitAll(Developer *candidates[], Developer *employees[]){
+
+    for(int i = 0 ; i < N ; i++){
+        if(candidates[i] != NULL) {
+            if (candidates[i]->recommenderOut1 != NULL)
+                free(candidates[i]->recommenderOut1);
+            if (candidates[i]->recommenderOut2 != NULL)
+                free(candidates[i]->recommenderOut2);
+            candidates[i]->recommend1 = NULL;
+            candidates[i]->recommend2 = NULL;
+            free(candidates[i]);
+        }
+    }
+    for(int j = 0 ; j < N ; j++){
+        if(employees[j] != NULL){
+            free(employees[j]);
+        }
+    }
+    return;
+}
